@@ -1,199 +1,338 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Math Competition Pro</title>
-<link rel="manifest" href="manifest.json">
-<style>
-body{
- margin:0;
- font-family:Arial;
- background:linear-gradient(135deg,#667eea,#764ba2);
- color:white;
-}
-.header{
- display:flex;
- justify-content:space-between;
- padding:15px 30px;
- font-size:20px;
- font-weight:bold;
-}
-.main{
- display:flex;
- height:calc(100vh - 60px);
-}
-.game{
- flex:3;
- overflow:auto;
- padding:20px;
-}
-.sidebar{
- flex:1;
- padding:20px;
-}
-table{border-collapse:collapse;}
-td{
- background:white;
- color:black;
- padding:10px;
- border-radius:12px;
- text-align:center;
- width:120px;
-}
-input{width:60px;text-align:center;}
-.correct{background:#a5f3a5!important;}
-.wrong{background:#ff9e9e!important;}
-button{padding:8px 12px;margin:5px;border-radius:8px;border:none;cursor:pointer;}
-.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Competition Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            font-size: 18px;
+            font-weight: bold;
+            flex-wrap: wrap;
+        }
+
+        .main {
+            display: flex;
+            flex-direction: column;
+            /* 👈 บังคับเรียงแนวตั้ง */
+            height: auto;
+        }
+
+        .game {
+            flex: none;
+            padding: 10px;
+        }
+
+        .sidebar {
+            flex: none;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td {
+            background: white;
+            color: black;
+            padding: 8px;
+            border-radius: 12px;
+            text-align: center;
+            width: 100px;
+        }
+
+        input {
+            width: 60px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .correct {
+            background: #a5f3a5 !important;
+        }
+
+        .wrong {
+            background: #ff9e9e !important;
+        }
+
+        button {
+            padding: 8px 10px;
+            margin: 4px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+
+            position: fixed;
+            /* 👈 ทำให้ลอย */
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            background: white;
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+        }
+
+        .numpad button {
+            font-size: 18px;
+        }
+
+        .dragging {
+            opacity: 0.7;
+        }
+
+        /* 📱 โหมดแนวตั้ง */
+        @media (orientation: portrait) {
+            .main {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .game {
+                order: 1;
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            td {
+                width: auto;
+            }
+
+            .header {
+                font-size: 16px;
+            }
+        }
+    </style>
+
 </head>
+
 <body>
 
-<div class="header">
-<div>🎮 Math Competition Pro</div>
-<div>⏱ <span id="timer">00:00</span></div>
-<div>คะแนน: <span id="score">0</span></div>
-</div>
+    <div class="header">
+        <div>🎮 Math Competition Pro</div>
+        <div>⏱ <span id="timer">00:00</span></div>
+        <div>คะแนน: <span id="score">0</span></div>
+    </div>
 
-<div style="padding:10px;">
-<select id="mode">
-<option value="1x10">1x10</option>
-<option value="2x10">2x10</option>
-<option value="3x20">3x20</option>
-</select>
+    <div style="padding:10px;">
+        <select id="mode">
+            <option value="1x10">1x10</option>
+            <option value="2x10">2x10</option>
+            <option value="3x20">3x20</option>
+        </select>
 
-<select id="count">
-<option value="3">3 ตัวเลข</option>
-<option value="4">4 ตัวเลข</option>
-<option value="5" selected>5 ตัวเลข</option>
-</select>
+        <select id="count">
+            <option value="3">3 ตัวเลข</option>
+            <option value="4">4 ตัวเลข</option>
+            <option value="5" selected>5 ตัวเลข</option>
+        </select>
 
-<button onclick="createQuestions()">เริ่มเกม</button>
-<button onclick="checkAnswers()">ตรวจคำตอบ</button>
-</div>
+        <button onclick="createQuestions()">เริ่มเกม</button>
+        <button onclick="checkAnswers()">ตรวจคำตอบ</button>
+    </div>
 
-<div class="main">
-<div class="game" id="table"></div>
+    <div class="main">
+        <div class="game" id="table"></div>
 
-<div class="sidebar">
-<h3>🏆 TOP 5</h3>
-<div id="ranking"></div>
-<div class="numpad" id="numpad"></div>
-</div>
-</div>
+        <div class="sidebar">
+            <h3>🏆 TOP 5</h3>
+            <div id="ranking"></div>
+            <div class="numpad" id="numpad"></div>
+        </div>
+    </div>
 
-<script>
-let answers=[];
-let startTime=0;
-let currentInput=null;
-let ranking=JSON.parse(localStorage.getItem("ranking")||"[]");
+    <script>
+        let answers = [];
+        let startTime = 0;
+        let currentInput = null;
+        let ranking = JSON.parse(localStorage.getItem("ranking") || "[]");
 
-function formatTime(sec){
- let m=Math.floor(sec/60);
- let s=sec%60;
- return String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
-}
+        function formatTime(sec) {
+            let m = Math.floor(sec / 60);
+            let s = sec % 60;
+            return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
+        }
 
-function updateTimer(){
- if(startTime){
-  let sec=Math.floor((Date.now()-startTime)/1000);
-  document.getElementById("timer").innerText=formatTime(sec);
- }
- requestAnimationFrame(updateTimer);
-}
-updateTimer();
+        function updateTimer() {
+            if (startTime) {
+                let sec = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById("timer").innerText = formatTime(sec);
+            }
+            requestAnimationFrame(updateTimer);
+        }
+        updateTimer();
 
-function generateQuestion(count){
- while(true){
-  let nums=[...Array(count)].map(()=>Math.floor(Math.random()*10));
-  let result=nums[0];
-  let ops=[];
-  let valid=true;
-  for(let i=1;i<count;i++){
-   let op=Math.random()<0.5?'+':'-';
-   if(op==='-' && result-nums[i]<0){ valid=false; break;}
-   result=op==='+'?result+nums[i]:result-nums[i];
-   ops.push(op);
-  }
-  if(valid && result>0) return {nums,ops,result};
- }
-}
+        function generateQuestion(count) {
+            while (true) {
+                let nums = [...Array(count)].map(() => Math.floor(Math.random() * 10));
+                let result = nums[0];
+                let ops = [];
+                let valid = true;
+                for (let i = 1; i < count; i++) {
+                    let op = Math.random() < 0.5 ? '+' : '-';
+                    if (op === '-' && result - nums[i] < 0) { valid = false; break; }
+                    result = op === '+' ? result + nums[i] : result - nums[i];
+                    ops.push(op);
+                }
+                if (valid && result > 0) return { nums, ops, result };
+            }
+        }
 
-function createQuestions(){
- answers=[];
- let mode=document.getElementById("mode").value;
- let count=parseInt(document.getElementById("count").value);
- let rows=1,cols=10;
- if(mode==="2x10"){rows=2;cols=10;}
- if(mode==="3x20"){rows=3;cols=20;}
- let html="<table>";
- for(let r=0;r<rows;r++){
-  html+="<tr>";
-  for(let c=0;c<cols;c++){
-   let q=generateQuestion(count);
-   answers.push(q.result);
-   html+="<td>";
-   html+=q.nums[0]+"<br>";
-   for(let i=0;i<q.ops.length;i++){
-    html+=q.ops[i]+" "+q.nums[i+1]+"<br>";
-   }
-   html+="<hr><input type='number' onclick='currentInput=this'>";
-   html+="</td>";
-  }
-  html+="</tr>";
- }
- html+="</table>";
- document.getElementById("table").innerHTML=html;
- startTime=Date.now();
-}
+        function createQuestions() {
+            answers = [];
+            let mode = document.getElementById("mode").value;
+            let count = parseInt(document.getElementById("count").value);
+            let rows = 1, cols = 10;
+            if (mode === "2x10") { rows = 2; cols = 10; }
+            if (mode === "3x20") { rows = 3; cols = 20; }
+            let html = "<table>";
+            for (let r = 0; r < rows; r++) {
+                html += "<tr>";
+                for (let c = 0; c < cols; c++) {
+                    let q = generateQuestion(count);
+                    answers.push(q.result);
+                    html += "<td>";
+                    html += q.nums[0] + "<br>";
+                    for (let i = 0; i < q.ops.length; i++) {
+                        html += q.ops[i] + " " + q.nums[i + 1] + "<br>";
+                    }
+                    html += "<hr><input type='number' onclick='currentInput=this'>";
+                    html += "</td>";
+                }
+                html += "</tr>";
+            }
+            html += "</table>";
+            document.getElementById("table").innerHTML = html;
+            startTime = Date.now();
+        }
 
-function checkAnswers(){
- let inputs=document.querySelectorAll("input");
- let score=0;
- inputs.forEach((inp,i)=>{
-  if(parseInt(inp.value)===answers[i]){
-   score++;
-   inp.className="correct";
-  }else{
-   inp.className="wrong";
-  }
- });
- let sec=Math.floor((Date.now()-startTime)/1000);
- document.getElementById("score").innerText=score+"/"+answers.length;
- ranking.push({score,time:sec});
- ranking.sort((a,b)=>b.score-a.score || a.time-b.time);
- ranking=ranking.slice(0,5);
- localStorage.setItem("ranking",JSON.stringify(ranking));
- showRanking();
-}
+        function checkAnswers() {
+            let inputs = document.querySelectorAll("input");
+            let score = 0;
+            inputs.forEach((inp, i) => {
+                if (parseInt(inp.value) === answers[i]) {
+                    score++;
+                    inp.className = "correct";
+                } else {
+                    inp.className = "wrong";
+                }
+            });
+            let sec = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById("score").innerText = score + "/" + answers.length;
+            ranking.push({ score, time: sec });
+            ranking.sort((a, b) => b.score - a.score || a.time - b.time);
+            ranking = ranking.slice(0, 5);
+            localStorage.setItem("ranking", JSON.stringify(ranking));
+            showRanking();
+        }
 
-function showRanking(){
- let html="";
- ranking.forEach((r,i)=>{
-  let medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":"🎖";
-  html+=medal+" "+r.score+" | "+formatTime(r.time)+"<br>";
- });
- document.getElementById("ranking").innerHTML=html;
-}
-showRanking();
+        function showRanking() {
+            let html = "";
+            ranking.forEach((r, i) => {
+                let medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "🎖";
+                html += medal + " " + r.score + " | " + formatTime(r.time) + "<br>";
+            });
+            document.getElementById("ranking").innerHTML = html;
+        }
+        showRanking();
 
-let nums=['7','8','9','4','5','6','1','2','3','0','⌫','C'];
-nums.forEach(n=>{
- let btn=document.createElement("button");
- btn.innerText=n;
- btn.onclick=()=>{
-  if(!currentInput) return;
-  if(n==="⌫") currentInput.value=currentInput.value.slice(0,-1);
-  else if(n==="C") currentInput.value="";
-  else currentInput.value+=n;
- };
- document.getElementById("numpad").appendChild(btn);
-});
+        let nums = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '⌫', 'C'];
+        nums.forEach(n => {
+            let btn = document.createElement("button");
+            btn.innerText = n;
+            btn.onclick = () => {
+                if (!currentInput) return;
+                if (n === "⌫") currentInput.value = currentInput.value.slice(0, -1);
+                else if (n === "C") currentInput.value = "";
+                else currentInput.value += n;
+            };
+            document.getElementById("numpad").appendChild(btn);
+        });
 
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('service-worker.js');
-}
-</script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+
+        // ===== DRAG NUMPAD ===== -----------------------------------------
+        const numpad = document.getElementById("numpad");
+
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function startDrag(e) {
+            isDragging = true;
+            numpad.classList.add("dragging");
+
+            const rect = numpad.getBoundingClientRect();
+
+            if (e.type === "touchstart") {
+                offsetX = e.touches[0].clientX - rect.left;
+                offsetY = e.touches[0].clientY - rect.top;
+            } else {
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+            }
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+
+            let clientX, clientY;
+
+            if (e.type === "touchmove") {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            numpad.style.left = (clientX - offsetX) + "px";
+            numpad.style.top = (clientY - offsetY) + "px";
+            numpad.style.bottom = "auto";
+            numpad.style.right = "auto";
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            numpad.classList.remove("dragging");
+        }
+
+        numpad.addEventListener("mousedown", startDrag);
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("mouseup", stopDrag);
+
+        numpad.addEventListener("touchstart", startDrag);
+        document.addEventListener("touchmove", drag);
+        document.addEventListener("touchend", stopDrag);
+        // ============end numpad=======
+    </script>
 </body>
+
 </html>
