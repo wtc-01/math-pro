@@ -7,11 +7,27 @@
     <title>Math Competition Pro</title>
     <link rel="manifest" href="manifest.json">
     <style>
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
         body {
             margin: 0;
             font-family: Arial;
-            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+
+            background-image: url("bg.png");
+            background-size: cover;
+            /* เต็มจอ */
+            background-position: center;
+            /* จัดกลาง */
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            /* ไม่เลื่อนตาม */
         }
 
         .header {
@@ -78,6 +94,10 @@
             font-size: 14px;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         .numpad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -138,7 +158,7 @@
         <div>⏱ <span id="timer">00:00</span></div>
         <div>คะแนน: <span id="score">0</span></div>
     </div>
-
+    <div><button onclick="toggleNumpad()">⌨ แสดง/ซ่อน Numpad</button></div>
     <div style="padding:10px;">
         <select id="mode">
             <option value="1x10">1x10</option>
@@ -171,6 +191,11 @@
         let startTime = 0;
         let currentInput = null;
         let ranking = JSON.parse(localStorage.getItem("ranking") || "[]");
+
+        function toggleNumpad() {
+            const numpad = document.getElementById("numpad");
+            numpad.classList.toggle("hidden");
+        }
 
         function formatTime(sec) {
             let m = Math.floor(sec / 60);
