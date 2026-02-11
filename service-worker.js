@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "math-pro-offline-v1";
+const CACHE_NAME = "math-pro-offline-v4";
 const FILES_TO_CACHE = ["./","index.html","manifest.json"];
 
 self.addEventListener("install", event => {
