@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Math Competition Pro</title>
-<link rel="manifest" href="manifest.json">
 
 <style>
 body{
@@ -86,7 +85,6 @@ button{
  box-shadow:0 10px 25px rgba(0,0,0,0.3);
  z-index:999;
 }
-.numpad button{ font-size:16px; }
 .hidden{ display:none!important; }
 
 .toggle-btn{
@@ -101,6 +99,12 @@ button{
  font-size:20px;
  box-shadow:0 5px 15px rgba(0,0,0,0.3);
  z-index:1000;
+}
+.rank-box{
+ margin:6px 0;
+ padding:6px;
+ background:rgba(255,255,255,0.2);
+ border-radius:8px;
 }
 </style>
 </head>
@@ -145,6 +149,59 @@ button{
 let answers=[];
 let startTime=0;
 let currentInput=null;
+
+/* ---------------- TOP 5 ---------------- */
+function saveScore(score){
+ let timeSec = Math.floor((Date.now()-startTime)/1000);
+
+ let scores = JSON.parse(localStorage.getItem("topScores")) || [];
+
+ scores.push({
+  score: score,
+  time: timeSec
+ });
+
+ scores.sort((a,b)=>{
+  if(b.score !== a.score){
+   return b.score - a.score;
+  }
+  return a.time - b.time;
+ });
+
+ scores = scores.slice(0,5);
+
+ localStorage.setItem("topScores", JSON.stringify(scores));
+
+ renderTop5();
+}
+
+function renderTop5(){
+ let scores = JSON.parse(localStorage.getItem("topScores")) || [];
+
+ let html="";
+
+ if(scores.length===0){
+  html+="<div>ยังไม่มีคะแนน</div>";
+ }else{
+  scores.forEach((item,i)=>{
+   let medal = ["🥇","🥈","🥉"][i] || "🏅";
+
+   let m=Math.floor(item.time/60);
+   let s=item.time%60;
+   let timeStr = String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
+
+   html+=`
+    <div class="rank-box">
+      ${medal} ${i+1}. ${item.score} คะแนน  
+      <br>⏱ ${timeStr}
+    </div>
+   `;
+  });
+ }
+
+ document.getElementById("ranking").innerHTML = html;
+}
+/* -------------------------------------- */
 
 function formatTime(sec){
  let m=Math.floor(sec/60);
@@ -193,7 +250,7 @@ function createQuestions(){
    let number=r*cols+c+1;
    let color="color-"+((number%5)+1);
    html+="<td>";
-   html+="<div class='question-number "+color+"'>ข้อ "+number+"</div><br>&nbsp;&nbsp;&nbsp;";
+   html+="<div class='question-number "+color+"'>ข้อ "+number+"</div><br>";
    html+=q.nums[0]+"<br>";
    for(let i=0;i<q.ops.length;i++){
     html+=q.ops[i]+" "+q.nums[i+1]+"<br>";
@@ -220,6 +277,7 @@ function checkAnswers(){
   }
  });
  document.getElementById("score").innerText=score+"/"+answers.length;
+ saveScore(score);
 }
 
 function toggleNumpad(){
@@ -257,7 +315,6 @@ nums.forEach(n=>{
  btn.innerText=n;
  btn.onclick=()=>{
   if(!currentInput && n!=="ถัดไป" && n!=="ก่อนหน้า") return;
-
   if(n==="⌫") currentInput.value=currentInput.value.slice(0,-1);
   else if(n==="C") currentInput.value="";
   else if(n==="ถัดไป") moveNext();
@@ -267,7 +324,7 @@ nums.forEach(n=>{
  document.getElementById("numpad").appendChild(btn);
 });
 
-// Drag
+/* Drag numpad */
 const numpad=document.getElementById("numpad");
 let isDragging=false,offsetX=0,offsetY=0;
 
@@ -296,6 +353,8 @@ document.addEventListener("mouseup",stopDrag);
 numpad.addEventListener("touchstart",startDrag);
 document.addEventListener("touchmove",drag);
 document.addEventListener("touchend",stopDrag);
+
+renderTop5();
 </script>
 
 </body>
