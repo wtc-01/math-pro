@@ -1,363 +1,287 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Competition Pro</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: -1;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Competition Pro</title>
+<link rel="manifest" href="manifest.json">
 
-        body {
-            margin: 0;
-            font-family: Arial;
-            color: white;
+<style>
+body{
+ margin:0;
+ font-family:Arial;
+ color:white;
+ background-image:url("bg.png");
+ background-size:cover;
+ background-position:center;
+ background-repeat:no-repeat;
+ background-attachment:fixed;
+}
 
-            background-image: url("bg.png");
-            background-size: cover;
-            /* เต็มจอ */
-            background-position: center;
-            /* จัดกลาง */
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            /* ไม่เลื่อนตาม */
-        }
+body::before{
+ content:"";
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,0.45);
+ z-index:-1;
+}
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 16px;
-            font-size: 18px;
-            font-weight: bold;
-            flex-wrap: wrap;
-        }
+.header{
+ display:flex;
+ justify-content:space-between;
+ padding:10px 15px;
+ font-weight:bold;
+ flex-wrap:wrap;
+}
 
-        .main {
-            display: flex;
-            flex-direction: column;
-            /* 👈 บังคับเรียงแนวตั้ง */
-            height: auto;
-        }
+.main{
+ display:flex;
+ flex-direction:column;
+}
 
-        .game {
-            flex: none;
-            padding: 10px;
-        }
+.game{ padding:10px; overflow:auto; }
+.sidebar{ padding:10px; margin-top:10px; }
 
-        .sidebar {
-            flex: none;
-            padding: 10px;
-            margin-top: 10px;
-        }
+table{ border-collapse:collapse; width:100%; }
+td{
+ background:white;
+ color:black;
+ padding:8px;
+ border-radius:12px;
+ text-align:center;
+ width:100px;
+ vertical-align:top;
+}
 
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+input{ width:60px; text-align:center; font-size:16px; }
 
-        td {
-            background: white;
-            color: black;
-            padding: 8px;
-            border-radius: 12px;
-            text-align: center;
-            width: 100px;
-        }
+.correct{background:#a5f3a5!important;}
+.wrong{background:#ff9e9e!important;}
 
-        input {
-            width: 60px;
-            text-align: center;
-            font-size: 16px;
-        }
+button{
+ padding:6px 10px;
+ margin:4px;
+ border-radius:8px;
+ border:none;
+ cursor:pointer;
+}
 
-        .correct {
-            background: #a5f3a5 !important;
-        }
+.question-number{
+ font-weight:bold;
+ font-size:13px;
+ margin-bottom:5px;
+ padding:4px 8px;
+ border-radius:8px;
+ display:inline-block;
+}
 
-        .wrong {
-            background: #ff9e9e !important;
-        }
+.color-1{ background:#ff7675;color:white;}
+.color-2{ background:#74b9ff;color:white;}
+.color-3{ background:#55efc4;color:black;}
+.color-4{ background:#ffeaa7;color:black;}
+.color-5{ background:#a29bfe;color:white;}
 
-        button {
-            padding: 8px 10px;
-            margin: 4px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
+.numpad{
+ position:fixed;
+ bottom:20px;
+ right:20px;
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:8px;
+ width:200px;
+ background:white;
+ padding:10px;
+ border-radius:16px;
+ box-shadow:0 10px 25px rgba(0,0,0,0.3);
+ z-index:999;
+}
 
-        .hidden {
-            display: none !important;
-        }
+.numpad button{ font-size:18px; }
+.hidden{ display:none!important; }
+.dragging{ opacity:0.7; }
 
-        .numpad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 10px;
-
-            position: fixed;
-            /* 👈 ทำให้ลอย */
-            bottom: 20px;
-            right: 20px;
-            width: 200px;
-            background: white;
-            padding: 10px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            z-index: 999;
-        }
-
-        .numpad button {
-            font-size: 18px;
-        }
-
-        .dragging {
-            opacity: 0.7;
-        }
-
-        /* 📱 โหมดแนวตั้ง */
-        @media (orientation: portrait) {
-            .main {
-                flex-direction: column;
-                height: auto;
-            }
-
-            .game {
-                order: 1;
-            }
-
-            .sidebar {
-                order: 2;
-            }
-
-            td {
-                width: auto;
-            }
-
-            .header {
-                font-size: 16px;
-            }
-        }
-    </style>
-
+.toggle-btn{
+ position:fixed;
+ bottom:20px;
+ left:20px;
+ width:50px;
+ height:50px;
+ border-radius:50%;
+ background:#ffcc00;
+ border:none;
+ font-size:20px;
+ box-shadow:0 5px 15px rgba(0,0,0,0.3);
+ z-index:1000;
+}
+</style>
 </head>
 
 <body>
 
-    <div class="header">
-        <div>🎮 Math Competition Pro</div>
-        <div>⏱ <span id="timer">00:00</span></div>
-        <div>คะแนน: <span id="score">0</span></div>
-    </div>
-    <div><button onclick="toggleNumpad()">⌨ แสดง/ซ่อน Numpad</button></div>
-    <div style="padding:10px;">
-        <select id="mode">
-            <option value="1x10">1x10</option>
-            <option value="2x10">2x10</option>
-            <option value="3x20">3x20</option>
-        </select>
+<div class="header">
+<div>🎮 Math Competition Pro</div>
+<div>⏱ <span id="timer">00:00</span></div>
+<div>คะแนน: <span id="score">0</span></div>
+</div>
 
-        <select id="count">
-            <option value="3">3 ตัวเลข</option>
-            <option value="4">4 ตัวเลข</option>
-            <option value="5" selected>5 ตัวเลข</option>
-        </select>
+<div style="padding:10px;">
+<select id="mode">
+<option value="1x10">1x10</option>
+<option value="2x10">2x10</option>
+<option value="3x20">3x20</option>
+</select>
 
-        <button onclick="createQuestions()">เริ่มเกม</button>
-        <button onclick="checkAnswers()">ตรวจคำตอบ</button>
-    </div>
+<select id="count">
+<option value="3">3 ตัวเลข</option>
+<option value="4">4 ตัวเลข</option>
+<option value="5" selected>5 ตัวเลข</option>
+</select>
 
-    <div class="main">
-        <div class="game" id="table"></div>
+<button onclick="createQuestions()">เริ่มเกม</button>
+<button onclick="checkAnswers()">ตรวจคำตอบ</button>
+</div>
 
-        <div class="sidebar">
-            <h3>🏆 TOP 5</h3>
-            <div id="ranking"></div>
-            <div class="numpad" id="numpad"></div>
-        </div>
-    </div>
+<div class="main">
+<div class="game" id="table"></div>
 
-    <script>
-        let answers = [];
-        let startTime = 0;
-        let currentInput = null;
-        let ranking = JSON.parse(localStorage.getItem("ranking") || "[]");
+<div class="sidebar">
+<h3>🏆 TOP 5</h3>
+<div id="ranking"></div>
+</div>
+</div>
 
-        function toggleNumpad() {
-            const numpad = document.getElementById("numpad");
-            numpad.classList.toggle("hidden");
-        }
+<button class="toggle-btn" onclick="toggleNumpad()">⌨</button>
+<div class="numpad" id="numpad"></div>
 
-        function formatTime(sec) {
-            let m = Math.floor(sec / 60);
-            let s = sec % 60;
-            return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
-        }
+<script>
+let answers=[];
+let startTime=0;
+let currentInput=null;
+let ranking=JSON.parse(localStorage.getItem("ranking")||"[]");
 
-        function updateTimer() {
-            if (startTime) {
-                let sec = Math.floor((Date.now() - startTime) / 1000);
-                document.getElementById("timer").innerText = formatTime(sec);
-            }
-            requestAnimationFrame(updateTimer);
-        }
-        updateTimer();
+function formatTime(sec){
+ let m=Math.floor(sec/60);
+ let s=sec%60;
+ return String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
+}
 
-        function generateQuestion(count) {
-            while (true) {
-                let nums = [...Array(count)].map(() => Math.floor(Math.random() * 10));
-                let result = nums[0];
-                let ops = [];
-                let valid = true;
-                for (let i = 1; i < count; i++) {
-                    let op = Math.random() < 0.5 ? '+' : '-';
-                    if (op === '-' && result - nums[i] < 0) { valid = false; break; }
-                    result = op === '+' ? result + nums[i] : result - nums[i];
-                    ops.push(op);
-                }
-                if (valid && result > 0) return { nums, ops, result };
-            }
-        }
+function updateTimer(){
+ if(startTime){
+  let sec=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById("timer").innerText=formatTime(sec);
+ }
+ requestAnimationFrame(updateTimer);
+}
+updateTimer();
 
-        function createQuestions() {
-            answers = [];
-            let mode = document.getElementById("mode").value;
-            let count = parseInt(document.getElementById("count").value);
-            let rows = 1, cols = 10;
-            if (mode === "2x10") { rows = 2; cols = 10; }
-            if (mode === "3x20") { rows = 3; cols = 20; }
-            let html = "<table>";
-            for (let r = 0; r < rows; r++) {
-                html += "<tr>";
-                for (let c = 0; c < cols; c++) {
-                    let q = generateQuestion(count);
-                    answers.push(q.result);
-                    html += "<td>";
-                    html += q.nums[0] + "<br>";
-                    for (let i = 0; i < q.ops.length; i++) {
-                        html += q.ops[i] + " " + q.nums[i + 1] + "<br>";
-                    }
-                    html += "<hr><input type='number' onclick='currentInput=this'>";
-                    html += "</td>";
-                }
-                html += "</tr>";
-            }
-            html += "</table>";
-            document.getElementById("table").innerHTML = html;
-            startTime = Date.now();
-        }
+function generateQuestion(count){
+ while(true){
+  let nums=[...Array(count)].map(()=>Math.floor(Math.random()*10));
+  let result=nums[0];
+  let ops=[];
+  let valid=true;
+  for(let i=1;i<count;i++){
+   let op=Math.random()<0.5?'+':'-';
+   if(op==='-' && result-nums[i]<0){ valid=false; break;}
+   result=op==='+'?result+nums[i]:result-nums[i];
+   ops.push(op);
+  }
+  if(valid && result>0) return {nums,ops,result};
+ }
+}
 
-        function checkAnswers() {
-            let inputs = document.querySelectorAll("input");
-            let score = 0;
-            inputs.forEach((inp, i) => {
-                if (parseInt(inp.value) === answers[i]) {
-                    score++;
-                    inp.className = "correct";
-                } else {
-                    inp.className = "wrong";
-                }
-            });
-            let sec = Math.floor((Date.now() - startTime) / 1000);
-            document.getElementById("score").innerText = score + "/" + answers.length;
-            ranking.push({ score, time: sec });
-            ranking.sort((a, b) => b.score - a.score || a.time - b.time);
-            ranking = ranking.slice(0, 5);
-            localStorage.setItem("ranking", JSON.stringify(ranking));
-            showRanking();
-        }
+function createQuestions(){
+ answers=[];
+ let mode=document.getElementById("mode").value;
+ let count=parseInt(document.getElementById("count").value);
+ let rows=1,cols=10;
+ if(mode==="2x10"){rows=2;cols=10;}
+ if(mode==="3x20"){rows=3;cols=20;}
+ let html="<table>";
+ for(let r=0;r<rows;r++){
+  html+="<tr>";
+  for(let c=0;c<cols;c++){
+   let q=generateQuestion(count);
+   answers.push(q.result);
+   let number=r*cols+c+1;
+   let color="color-"+((number%5)+1);
+   html+="<td>";
+   html+="<div class='question-number "+color+"'>ข้อ "+number+"</div><br>&nbsp;&nbsp;&nbsp;";
+   html+=q.nums[0]+"<br>";
+   for(let i=0;i<q.ops.length;i++){
+    html+=q.ops[i]+" "+q.nums[i+1]+"<br>";
+   }
+   html+="<hr><input type='number' onclick='currentInput=this'>";
+   html+="</td>";
+  }
+  html+="</tr>";
+ }
+ html+="</table>";
+ document.getElementById("table").innerHTML=html;
+ startTime=Date.now();
+}
 
-        function showRanking() {
-            let html = "";
-            ranking.forEach((r, i) => {
-                let medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "🎖";
-                html += medal + " " + r.score + " | " + formatTime(r.time) + "<br>";
-            });
-            document.getElementById("ranking").innerHTML = html;
-        }
-        showRanking();
+function checkAnswers(){
+ let inputs=document.querySelectorAll("input");
+ let score=0;
+ inputs.forEach((inp,i)=>{
+  if(parseInt(inp.value)===answers[i]){
+   score++;
+   inp.className="correct";
+  }else{
+   inp.className="wrong";
+  }
+ });
+ document.getElementById("score").innerText=score+"/"+answers.length;
+}
 
-        let nums = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '⌫', 'C'];
-        nums.forEach(n => {
-            let btn = document.createElement("button");
-            btn.innerText = n;
-            btn.onclick = () => {
-                if (!currentInput) return;
-                if (n === "⌫") currentInput.value = currentInput.value.slice(0, -1);
-                else if (n === "C") currentInput.value = "";
-                else currentInput.value += n;
-            };
-            document.getElementById("numpad").appendChild(btn);
-        });
+function toggleNumpad(){
+ document.getElementById("numpad").classList.toggle("hidden");
+}
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js');
-        }
+let nums=['7','8','9','4','5','6','1','2','3','0','⌫','C'];
+nums.forEach(n=>{
+ let btn=document.createElement("button");
+ btn.innerText=n;
+ btn.onclick=()=>{
+  if(!currentInput) return;
+  if(n==="⌫") currentInput.value=currentInput.value.slice(0,-1);
+  else if(n==="C") currentInput.value="";
+  else currentInput.value+=n;
+ };
+ document.getElementById("numpad").appendChild(btn);
+});
 
-        // ===== DRAG NUMPAD ===== -----------------------------------------
-        const numpad = document.getElementById("numpad");
+// Drag Numpad
+const numpad=document.getElementById("numpad");
+let isDragging=false,offsetX=0,offsetY=0;
 
-        let isDragging = false;
-        let offsetX = 0;
-        let offsetY = 0;
+function startDrag(e){
+ isDragging=true;
+ const rect=numpad.getBoundingClientRect();
+ let x=e.touches?e.touches[0].clientX:e.clientX;
+ let y=e.touches?e.touches[0].clientY:e.clientY;
+ offsetX=x-rect.left;
+ offsetY=y-rect.top;
+}
+function drag(e){
+ if(!isDragging) return;
+ let x=e.touches?e.touches[0].clientX:e.clientX;
+ let y=e.touches?e.touches[0].clientY:e.clientY;
+ numpad.style.left=(x-offsetX)+"px";
+ numpad.style.top=(y-offsetY)+"px";
+ numpad.style.bottom="auto";
+ numpad.style.right="auto";
+}
+function stopDrag(){ isDragging=false; }
 
-        function startDrag(e) {
-            isDragging = true;
-            numpad.classList.add("dragging");
+numpad.addEventListener("mousedown",startDrag);
+document.addEventListener("mousemove",drag);
+document.addEventListener("mouseup",stopDrag);
+numpad.addEventListener("touchstart",startDrag);
+document.addEventListener("touchmove",drag);
+document.addEventListener("touchend",stopDrag);
+</script>
 
-            const rect = numpad.getBoundingClientRect();
-
-            if (e.type === "touchstart") {
-                offsetX = e.touches[0].clientX - rect.left;
-                offsetY = e.touches[0].clientY - rect.top;
-            } else {
-                offsetX = e.clientX - rect.left;
-                offsetY = e.clientY - rect.top;
-            }
-        }
-
-        function drag(e) {
-            if (!isDragging) return;
-
-            let clientX, clientY;
-
-            if (e.type === "touchmove") {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-
-            numpad.style.left = (clientX - offsetX) + "px";
-            numpad.style.top = (clientY - offsetY) + "px";
-            numpad.style.bottom = "auto";
-            numpad.style.right = "auto";
-        }
-
-        function stopDrag() {
-            isDragging = false;
-            numpad.classList.remove("dragging");
-        }
-
-        numpad.addEventListener("mousedown", startDrag);
-        document.addEventListener("mousemove", drag);
-        document.addEventListener("mouseup", stopDrag);
-
-        numpad.addEventListener("touchstart", startDrag);
-        document.addEventListener("touchmove", drag);
-        document.addEventListener("touchend", stopDrag);
-        // ============end numpad=======
-    </script>
 </body>
-
 </html>
