@@ -44,7 +44,11 @@ td{
  width:100px;
  vertical-align:top;
 }
-input{ width:60px; text-align:center; font-size:16px; }
+input{
+ width:60px;
+ text-align:center;
+ font-size:16px;
+}
 
 .correct{background:#a5f3a5!important;}
 .wrong{background:#ff9e9e!important;}
@@ -100,6 +104,7 @@ button{
  box-shadow:0 5px 15px rgba(0,0,0,0.3);
  z-index:1000;
 }
+
 .rank-box{
  margin:6px 0;
  padding:6px;
@@ -146,63 +151,45 @@ button{
 <div class="numpad" id="numpad"></div>
 
 <script>
+
 let answers=[];
 let startTime=0;
 let currentInput=null;
 
+/* ---------------- ตรวจจับมือถือ ---------------- */
+function isMobileDevice(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
 /* ---------------- TOP 5 ---------------- */
 function saveScore(score){
  let timeSec = Math.floor((Date.now()-startTime)/1000);
-
  let scores = JSON.parse(localStorage.getItem("topScores")) || [];
-
- scores.push({
-  score: score,
-  time: timeSec
- });
-
- scores.sort((a,b)=>{
-  if(b.score !== a.score){
-   return b.score - a.score;
-  }
-  return a.time - b.time;
- });
-
+ scores.push({score:score,time:timeSec});
+ scores.sort((a,b)=> b.score!==a.score ? b.score-a.score : a.time-b.time);
  scores = scores.slice(0,5);
-
  localStorage.setItem("topScores", JSON.stringify(scores));
-
  renderTop5();
 }
 
 function renderTop5(){
  let scores = JSON.parse(localStorage.getItem("topScores")) || [];
-
  let html="";
-
  if(scores.length===0){
   html+="<div>ยังไม่มีคะแนน</div>";
  }else{
   scores.forEach((item,i)=>{
-   let medal = ["🥇","🥈","🥉"][i] || "🏅";
-
+   let medal=["🥇","🥈","🥉"][i] || "🏅";
    let m=Math.floor(item.time/60);
    let s=item.time%60;
-   let timeStr = String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
-
-   html+=`
-    <div class="rank-box">
-      ${medal} ${i+1}. ${item.score} คะแนน  
-      <br>⏱ ${timeStr}
-    </div>
-   `;
+   let timeStr=String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
+   html+=`<div class="rank-box">${medal} ${i+1}. ${item.score} คะแนน<br>⏱ ${timeStr}</div>`;
   });
  }
-
- document.getElementById("ranking").innerHTML = html;
+ document.getElementById("ranking").innerHTML=html;
 }
-/* -------------------------------------- */
 
+/* ---------------- TIMER ---------------- */
 function formatTime(sec){
  let m=Math.floor(sec/60);
  let s=sec%60;
@@ -217,6 +204,7 @@ function updateTimer(){
 }
 updateTimer();
 
+/* ---------------- สร้างโจทย์ ---------------- */
 function generateQuestion(count){
  while(true){
   let nums=[...Array(count)].map(()=>Math.floor(Math.random()*10));
@@ -229,7 +217,7 @@ function generateQuestion(count){
    result=op==='+'?result+nums[i]:result-nums[i];
    ops.push(op);
   }
-  if(valid && result>0) return {nums,ops,result};
+  if(valid && result>=0) return {nums,ops,result};
  }
 }
 
@@ -250,12 +238,18 @@ function createQuestions(){
    let number=r*cols+c+1;
    let color="color-"+((number%5)+1);
    html+="<td>";
-   html+="<div class='question-number "+color+"'>ข้อ "+number+"</div><br>";
+   html+=`<div class='question-number ${color}'>ข้อ ${number}</div><br>`;
    html+=q.nums[0]+"<br>";
    for(let i=0;i<q.ops.length;i++){
     html+=q.ops[i]+" "+q.nums[i+1]+"<br>";
    }
-   html+="<hr><input type='number' onclick='currentInput=this'>";
+
+   if(isMobileDevice()){
+     html+="<hr><input type='text' readonly inputmode='none' onclick='currentInput=this'>";
+   }else{
+     html+="<hr><input type='number' onclick='currentInput=this'>";
+   }
+
    html+="</td>";
   }
   html+="</tr>";
@@ -265,6 +259,7 @@ function createQuestions(){
  startTime=Date.now();
 }
 
+/* ---------------- ตรวจคำตอบ ---------------- */
 function checkAnswers(){
  let inputs=document.querySelectorAll("input");
  let score=0;
@@ -280,35 +275,12 @@ function checkAnswers(){
  saveScore(score);
 }
 
+/* ---------------- NUMPAD ---------------- */
 function toggleNumpad(){
  document.getElementById("numpad").classList.toggle("hidden");
 }
 
-function focusInputByIndex(index){
- let inputs=document.querySelectorAll("input");
- if(index>=0 && index<inputs.length){
-  inputs[index].focus();
-  currentInput=inputs[index];
- }
-}
-function moveNext(){
- let inputs=document.querySelectorAll("input");
- let currentIndex=[...inputs].indexOf(currentInput);
- focusInputByIndex(currentIndex+1);
-}
-function movePrev(){
- let inputs=document.querySelectorAll("input");
- let currentIndex=[...inputs].indexOf(currentInput);
- focusInputByIndex(currentIndex-1);
-}
-
-let nums=[
- '7','8','9',
- '4','5','6',
- '1','2','3',
- 'ก่อนหน้า','0','ถัดไป',
- '⌫','C'
-];
+let nums=['7','8','9','4','5','6','1','2','3','ก่อนหน้า','0','ถัดไป','⌫','C'];
 
 nums.forEach(n=>{
  let btn=document.createElement("button");
@@ -324,35 +296,22 @@ nums.forEach(n=>{
  document.getElementById("numpad").appendChild(btn);
 });
 
-/* Drag numpad */
-const numpad=document.getElementById("numpad");
-let isDragging=false,offsetX=0,offsetY=0;
-
-function startDrag(e){
- isDragging=true;
- const rect=numpad.getBoundingClientRect();
- let x=e.touches?e.touches[0].clientX:e.clientX;
- let y=e.touches?e.touches[0].clientY:e.clientY;
- offsetX=x-rect.left;
- offsetY=y-rect.top;
+function focusInputByIndex(index){
+ let inputs=document.querySelectorAll("input");
+ if(index>=0 && index<inputs.length){
+  currentInput=inputs[index];
+ }
 }
-function drag(e){
- if(!isDragging) return;
- let x=e.touches?e.touches[0].clientX:e.clientX;
- let y=e.touches?e.touches[0].clientY:e.clientY;
- numpad.style.left=(x-offsetX)+"px";
- numpad.style.top=(y-offsetY)+"px";
- numpad.style.bottom="auto";
- numpad.style.right="auto";
+function moveNext(){
+ let inputs=document.querySelectorAll("input");
+ let i=[...inputs].indexOf(currentInput);
+ focusInputByIndex(i+1);
 }
-function stopDrag(){ isDragging=false; }
-
-numpad.addEventListener("mousedown",startDrag);
-document.addEventListener("mousemove",drag);
-document.addEventListener("mouseup",stopDrag);
-numpad.addEventListener("touchstart",startDrag);
-document.addEventListener("touchmove",drag);
-document.addEventListener("touchend",stopDrag);
+function movePrev(){
+ let inputs=document.querySelectorAll("input");
+ let i=[...inputs].indexOf(currentInput);
+ focusInputByIndex(i-1);
+}
 
 renderTop5();
 </script>
