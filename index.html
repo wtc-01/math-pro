@@ -98,6 +98,9 @@ button{
  border-radius:16px;
  box-shadow:0 10px 25px rgba(0,0,0,0.3);
  z-index:999;
+
+ cursor:move;          /* เพิ่ม */
+ touch-action:none;    /* สำคัญสำหรับ iPad */
 }
 .hidden{ display:none!important; }
 
@@ -332,6 +335,40 @@ function movePrev(){
 }
 
 renderTop5();
+/* ====== DRAG NUMPAD ====== */
+const numpad = document.getElementById("numpad");
+
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+numpad.addEventListener("pointerdown", (e) => {
+
+  // ไม่ลากถ้ากดปุ่มตัวเลข
+  if(e.target.tagName === "BUTTON") return;
+
+  isDragging = true;
+
+  const rect = numpad.getBoundingClientRect();
+  offsetX = e.clientX - rect.left;
+  offsetY = e.clientY - rect.top;
+
+  numpad.setPointerCapture(e.pointerId);
+});
+
+numpad.addEventListener("pointermove", (e) => {
+  if(!isDragging) return;
+
+  numpad.style.left = (e.clientX - offsetX) + "px";
+  numpad.style.top  = (e.clientY - offsetY) + "px";
+  numpad.style.right = "auto";
+  numpad.style.bottom = "auto";
+});
+
+numpad.addEventListener("pointerup", () => {
+  isDragging = false;
+});
+
 </script>
 
 </body>
